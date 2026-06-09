@@ -1,6 +1,0 @@
-{
-  "name": "千里共婵娟",
-  "description": "异国恋情侣的专属温柔、浪漫、干净的私人小App。",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
