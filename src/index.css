@@ -1,1 +1,102 @@
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-serif: "Noto Serif SC", serif;
+
+  --color-cream-50: #fdfcf7;
+  --color-cream-100: #f9f5ec;
+  --color-cream-200: #f2ebdb;
+  --color-cream-300: #e6dcc3;
+  --color-cream-900: #4a3e26;
+
+  --color-cyanic-50: #f2f7f9;
+  --color-cyanic-100: #e4eef1;
+  --color-cyanic-200: #c7dce2;
+  --color-cyanic-500: #75a5b5;
+  --color-cyanic-600: #538495;
+  --color-cyanic-900: #263d46;
+
+  --color-love-50: #fcf5f6;
+  --color-love-100: #fae8ec;
+  --color-love-200: #f6cdd5;
+  --color-love-500: #e57388;
+  --color-love-600: #d5506a;
+  --color-love-900: #5c1d29;
+
+  --color-charcoal-50: #f3f4f6;
+  --color-charcoal-600: #4b5563;
+  --color-charcoal-800: #2a2e35;
+  --color-charcoal-900: #1d2128;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.fade-in {
+  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.heart-float {
+  position: absolute;
+  pointer-events: none;
+  z-index: 50;
+  animation: floatUp 1.2s ease-out forwards;
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6) rotate(0deg);
+  }
+  15% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-80px) scale(1.1) rotate(15deg);
+  }
+}
+
+.moon-glow {
+  box-shadow: 0 0 35px 8px rgba(249, 245, 236, 0.7);
+  animation: breathe 4s ease-in-out infinite alternate;
+}
+
+@keyframes breathe {
+  0% {
+    transform: scale(1);
+    opacity: 0.85;
+    box-shadow: 0 0 25px 4px rgba(249, 245, 236, 0.6);
+  }
+  100% {
+    transform: scale(1.04);
+    opacity: 1;
+    box-shadow: 0 0 45px 12px rgba(254, 252, 247, 0.95);
+  }
+}
+
+.pairing-option {
+  @apply w-full py-4 text-center text-sm font-medium text-charcoal-800 bg-white border border-cream-200 rounded-2xl transition-all duration-200;
+}
+
+.pairing-option:hover {
+  @apply border-love-200 shadow-sm ring-2 ring-love-100/50;
+}
+
+.pairing-option-selected {
+  @apply border-love-200 bg-love-50/40 shadow-sm ring-2 ring-love-200/30;
+}
