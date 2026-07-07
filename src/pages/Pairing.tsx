@@ -195,7 +195,6 @@ export function Pairing() {
                 value={setupForm.myName}
                 onChange={(e) => setSetupForm((v) => ({...v, myName: e.target.value}))}
                 className="w-full text-sm bg-white border border-cream-200 rounded-xl py-2.5 px-3 outline-none focus:border-love-300"
-                placeholder="例如：瑞士"
               />
             </div>
             <div>
@@ -204,7 +203,6 @@ export function Pairing() {
                 value={setupForm.partnerName}
                 onChange={(e) => setSetupForm((v) => ({...v, partnerName: e.target.value}))}
                 className="w-full text-sm bg-white border border-cream-200 rounded-xl py-2.5 px-3 outline-none focus:border-love-300"
-                placeholder="例如：深圳"
               />
             </div>
           </div>

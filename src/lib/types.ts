@@ -8,6 +8,8 @@ export interface CoupleMember {
   city: string;
   timezone: number;
   emoji: string;
+  latitude?: number;
+  longitude?: number;
   joinedAt: string;
 }
 

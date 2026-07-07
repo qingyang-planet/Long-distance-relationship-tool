@@ -120,7 +120,12 @@ export async function joinCoupleSpace(
 export async function updateMemberProfile(
   coupleId: string,
   userId: string,
-  data: Partial<Pick<CoupleMember, 'nickname' | 'partnerNameHint' | 'city' | 'timezone' | 'emoji'>>,
+  data: Partial<
+    Pick<
+      CoupleMember,
+      'nickname' | 'partnerNameHint' | 'city' | 'timezone' | 'emoji' | 'latitude' | 'longitude'
+    >
+  >,
 ): Promise<void> {
   await updateDoc(doc(db, 'couples', coupleId, 'members', userId), data);
 }

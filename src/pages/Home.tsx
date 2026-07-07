@@ -14,6 +14,8 @@ import {
 } from '../lib/coupleService';
 import type {CoupleMember, Meeting, ThinkLetter, Wish} from '../lib/types';
 import {QUOTE_TEXTS, EMOJI_OPTIONS, TIMEZONE_OPTIONS} from '../lib/constants';
+import {calculateHaversine} from '../lib/cityCoords';
+import {geocodeCity} from '../lib/geocode';
 import {MoonGraphic} from '../components/MoonGraphic';
 import {Toolbox} from '../components/Toolbox';
 import {useHeartParticles} from '../components/HeartOverlay';
@@ -65,6 +67,7 @@ export function Home() {
   const [meetingForm, setMeetingForm] = useState({time: '', place: ''});
   const [wishInput, setWishInput] = useState('');
   const [currentQuote, setCurrentQuote] = useState(-1);
+  const [distanceText, setDistanceText] = useState('-- km');
   const [incomingModal, setIncomingModal] = useState<{
     senderId: string;
     count: number;
@@ -141,9 +144,11 @@ export function Home() {
 
   const handleSaveProfile = async () => {
     if (!coupleId || !user) return;
+    const coords = await geocodeCity(profileForm.city);
     await updateMemberProfile(coupleId, user.uid, {
       city: profileForm.city,
       timezone: profileForm.timezone,
+      ...(coords ? {latitude: coords[0], longitude: coords[1]} : {}),
     });
     setShowProfile(false);
   };
@@ -192,49 +197,52 @@ export function Home() {
     setShowNaming(true);
   };
 
-  const cityDatabase: Record<string, [number, number]> = {
-    北京: [39.9, 116.4], 上海: [31.2, 121.5], 广州: [23.1, 113.3], 深圳: [22.5, 114.1],
-    杭州: [30.3, 120.2], 成都: [30.6, 104.1], 重庆: [29.6, 106.6], 西安: [34.3, 108.9],
-    伦敦: [51.5, -0.1], london: [51.5, -0.1], 纽约: [40.7, -74.0], 'new york': [40.7, -74.0],
-    巴黎: [48.9, 2.3], paris: [48.9, 2.3], 东京: [35.7, 139.7], tokyo: [35.7, 139.7],
-    悉尼: [-33.9, 151.2], sydney: [-33.9, 151.2], 新加坡: [1.3, 103.8], singapore: [1.3, 103.8],
-    洛杉矶: [34.1, -118.2], 'los angeles': [34.1, -118.2], 旧金山: [37.8, -122.4], 'san francisco': [37.8, -122.4],
-    温哥华: [49.3, -123.1], vancouver: [49.3, -123.1], 多伦多: [43.7, -79.4], toronto: [43.7, -79.4],
-    墨尔本: [-37.8, 145.0], melbourne: [-37.8, 145.0], 波士顿: [42.4, -71.1], boston: [42.4, -71.1],
-    香港: [22.3, 114.2], 台北: [25.0, 121.6], 首尔: [37.6, 127.0], seoul: [37.6, 127.0],
-  };
-
-  const calculateHaversine = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 6371;
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return Math.round(R * c);
-  };
-
-  const resolveCityCoord = (city: string): [number, number] | null => {
-    const input = city.trim().toLowerCase();
-    if (!input) return null;
-    for (const key in cityDatabase) {
-      if (input.includes(key.toLowerCase()) || key.toLowerCase().includes(input)) {
-        return cityDatabase[key];
-      }
+  useEffect(() => {
+    if (!me || !partner) {
+      setDistanceText('-- km');
+      return;
     }
-    return null;
-  };
 
-  const distanceText = (() => {
-    const c1 = resolveCityCoord(me?.city ?? '');
-    const c2 = resolveCityCoord(partner?.city ?? '');
-    if (!c1 || !c2) return '-- km';
-    return `${calculateHaversine(c1[0], c1[1], c2[0], c2[1])} km`;
-  })();
+    let cancelled = false;
+
+    const getCoords = async (
+      member: CoupleMember,
+      isSelf: boolean,
+    ): Promise<[number, number] | null> => {
+      if (member.latitude != null && member.longitude != null) {
+        return [member.latitude, member.longitude];
+      }
+
+      const coords = await geocodeCity(member.city);
+      if (coords && isSelf && coupleId && user) {
+        updateMemberProfile(coupleId, user.uid, {
+          latitude: coords[0],
+          longitude: coords[1],
+        }).catch(() => {});
+      }
+
+      return coords;
+    };
+
+    (async () => {
+      const [c1, c2] = await Promise.all([
+        getCoords(me, true),
+        getCoords(partner, false),
+      ]);
+
+      if (cancelled) return;
+      if (!c1 || !c2) {
+        setDistanceText('-- km');
+        return;
+      }
+
+      setDistanceText(`${calculateHaversine(c1[0], c1[1], c2[0], c2[1])} km`);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [me, partner, coupleId, user]);
 
   const openMeeting = () => {
     setMeetingForm({
